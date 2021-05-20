@@ -230,12 +230,15 @@ class EnhancedTable<T extends { id: I }, I extends string | number = T['id']> ex
         return (
             <div className={classes.root}>
                 <Paper className={classes.paper}>
-                    <EnhancedTableToolbar
-                        numSelected={this.state.selected.length}
-                        title={this.props.title}
-                        selectedActions={this.props.selectedActions}
-                        unselectedActions={this.props.unselectedActions}
-                    />
+                    {((this.props.selectedActions && this.props.selectedActions.length > 0) ||
+                        (this.props.unselectedActions && this.props.unselectedActions.length > 0)) && (
+                        <EnhancedTableToolbar
+                            numSelected={this.state.selected.length}
+                            title={this.props.title}
+                            selectedActions={this.props.selectedActions}
+                            unselectedActions={this.props.unselectedActions}
+                        />
+                    )}
                     <TableContainer>
                         <Table className={classes.table} size={this.state.dense ? 'small' : 'medium'} stickyHeader>
                             <colgroup>
