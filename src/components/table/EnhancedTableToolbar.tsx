@@ -28,7 +28,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 interface Props {
     numSelected: number;
-    title: JSX.Element;
+    title?: string;
     selectedActions?: TableAction[];
     unselectedActions?: TableAction[];
 }
@@ -49,7 +49,7 @@ export default function EnhancedTableToolbar(props: Props): JSX.Element {
                 </Typography>
             ) : (
                 <Typography className={classes.title} variant="h5" id="tableTitle" component="div">
-                    {props.title}
+                    {props.title || ''}
                 </Typography>
             )}
 

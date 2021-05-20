@@ -65,16 +65,16 @@ export interface Column<T> {
     width: string | number;
     disablePadding?: boolean;
     label: string;
-    renderer?: (val: T[keyof T]) => JSX.Element;
+    renderer?: (val: T[keyof T], row: T) => JSX.Element | string;
 }
 
-interface Props<T extends { id: I }, I extends string | number> extends TableStyles {
+interface Props<T extends { id: I }, I extends string | number = T['id']> {
     disableSelection?: boolean;
     order: 'asc' | 'desc';
     orderBy: keyof T;
     rows: T[];
     columns: Column<T>[];
-    title: JSX.Element;
+    title?: string;
     selectedActions?: TableAction[];
     unselectedActions?: TableAction[];
     rowActions?: RowAction<T>[];
@@ -91,11 +91,14 @@ interface State<T extends { id: I }, I extends string | number> {
     rowsPerPage: number;
 }
 
-class EnhancedTable<T extends { id: I }, I extends string | number> extends Component<Props<T, I>, State<T, I>> {
-    constructor(props: Props<T, I>) {
+class EnhancedTable<T extends { id: I }, I extends string | number = T['id']> extends Component<
+    Props<T, I> & TableStyles,
+    State<T, I>
+> {
+    constructor(props: Props<T, I> & TableStyles) {
         super(props);
         this.state = {
-            order: 'desc',
+            order: 'asc',
             orderBy: 'id',
             selected: [],
             page: -0,
@@ -114,7 +117,7 @@ class EnhancedTable<T extends { id: I }, I extends string | number> extends Comp
         this.setInitialSort();
     }
 
-    componentDidUpdate(prevProps: Props<T, I>) {
+    componentDidUpdate(prevProps: Props<T, I> & TableStyles) {
         if (prevProps.order !== this.props.order || prevProps.orderBy !== this.props.orderBy) {
             this.setInitialSort();
         }
@@ -288,7 +291,7 @@ class EnhancedTable<T extends { id: I }, I extends string | number> extends Comp
                                                 {this.props.columns.map((column, i) => (
                                                     <TableCell key={i} align={column.align}>
                                                         {column.renderer
-                                                            ? column.renderer(row[column.id])
+                                                            ? column.renderer(row[column.id], row)
                                                             : row[column.id]}
                                                     </TableCell>
                                                 ))}
@@ -330,7 +333,7 @@ class EnhancedTable<T extends { id: I }, I extends string | number> extends Comp
                         </Table>
                     </TableContainer>
                     <TablePagination
-                        rowsPerPageOptions={[10, 25, 50]}
+                        rowsPerPageOptions={[10, 25, 50, 100, 250]}
                         component="div"
                         count={this.props.rows.length}
                         rowsPerPage={this.state.rowsPerPage}
@@ -344,4 +347,15 @@ class EnhancedTable<T extends { id: I }, I extends string | number> extends Comp
     }
 }
 
-export default withStyles(styles, { withTheme: true })(EnhancedTable);
+export default class WrapperHOC<T extends { id: string | number }> extends React.PureComponent<Props<T>> {
+    private readonly C = this.wrapperFunc();
+
+    render(): JSX.Element {
+        return <this.C {...this.props} />;
+    }
+
+    private wrapperFunc() {
+        type t = new () => EnhancedTable<T>;
+        return withStyles(styles, { withTheme: true })(EnhancedTable as t);
+    }
+}
