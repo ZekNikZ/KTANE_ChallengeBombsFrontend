@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import NavigationDrawerContents from './NavigationDrawerContents';
 
+import { CssBaseline, Drawer, useScrollTrigger } from '@material-ui/core';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import AppBar from '@material-ui/core/AppBar';
@@ -9,7 +11,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { CssBaseline, useScrollTrigger } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -22,11 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-interface Props {
-    children: React.ReactElement;
-}
-
-function ElevationScroll(props: Props) {
+function ElevationScroll(props: { children: React.ReactElement }) {
     const { children } = props;
     // Note that you normally won't need to set the window ref as useScrollTrigger
     // will default to window.
@@ -41,10 +38,17 @@ function ElevationScroll(props: Props) {
     });
 }
 
+interface Props {
+    children?: React.ReactElement;
+}
+
 export default function MenuAppBar(props: Props): JSX.Element {
     const classes = useStyles();
-    const [auth, _] = React.useState(true);
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [auth, _] = useState(true);
+
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -61,7 +65,13 @@ export default function MenuAppBar(props: Props): JSX.Element {
             <ElevationScroll {...props}>
                 <AppBar>
                     <Toolbar>
-                        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                        <IconButton
+                            edge="start"
+                            className={classes.menuButton}
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={() => setDrawerOpen(true)}
+                        >
                             <MenuIcon />
                         </IconButton>
                         <Typography variant="h6" className={classes.title}>
@@ -102,6 +112,9 @@ export default function MenuAppBar(props: Props): JSX.Element {
                 </AppBar>
             </ElevationScroll>
             <Toolbar />
+            <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+                <NavigationDrawerContents anchor="left" onClose={() => setDrawerOpen(false)} />
+            </Drawer>
         </>
     );
 }
